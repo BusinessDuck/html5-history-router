@@ -16,9 +16,7 @@ export class Router {
      */
     constructor(options) {
         this.routes = [];
-        this.options = Object.assign({
-            debug: false
-        }, options);
+        this.options = { ...options };
         this.always(() => null);
 
         this._onLocationChange = this._onLocationChange.bind(this);
@@ -167,7 +165,6 @@ export class Router {
     _onLocationChange(applied) {
         const path = decodeURI(location.pathname);
 
-        log(`pushChange, ${path}`);
         for (let i = 0; i < this.routes.length; i++) {
             const parser = this._getRouteParser(this.routes[i].route);
             const match = path.match(parser.regexp);
