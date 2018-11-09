@@ -12,7 +12,7 @@ Lightweight and fast router based on HTML5 history.
   - Easy and clean code
 
 # Examples
----
+
 ### Configure route map
 ```js
     import { Router } from 'html5-native-router';
@@ -43,7 +43,7 @@ router.on('/product/:productId', ({ params }) => {
 router.pushState('/product/23');
 ```
 
-#### Route regexp match
+### Route regexp match
 ```js
 ...
 
@@ -54,7 +54,7 @@ router.on(/\/product\/[0-9]/, ({ path }) => {
 router.pushState('/product/23');
 ```
 
-#### Other callbacks
+### Other callbacks
 ```js
 ...
 
@@ -67,7 +67,7 @@ router.always(() => {
 router.pushState('/product/23');
 ```
 
-#### Routes change
+### Routes change
 ```js
 ...
 
@@ -89,7 +89,7 @@ router.pushState('/product/32', { productId: 32, allowPreview: true });
 // after external route change you need call applyState
 // history.pushState(state, title, url);
 // router.applyState();
-// then router will try match current location to defiden routes
+// then router will try match current location to defined routes
 
 
 ```
