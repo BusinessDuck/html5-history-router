@@ -16,11 +16,13 @@ export class Router {
      */
     constructor(options) {
         this.routes = [];
-        this.options = { ...options };
+        this.options = Object.assign({
+            debug: false
+        }, options);
         this.always(() => null);
-
         this._onLocationChange = this._onLocationChange.bind(this);
-        window.addEventListener('popstate', this._onLocationChange);
+        this._subscribe();
+        this.resolve();
         window.addEventListener('DOMContentLoaded', this._onLocationChange);
     }
 
@@ -30,13 +32,13 @@ export class Router {
      * @memberof Router
      */
     applyState() {
-        this._onLocationChange();
+        return this._onLocationChange(true);
     }
 
     /**
      * Push route state to history stack
      * @param {string} [url='/']
-     * @param {Object} [state={}]
+     * @param {*} [state={}]
      * @memberof Router
      */
     pushState(url = '/', state = {}) {
@@ -46,7 +48,11 @@ export class Router {
             history.replaceState(state, document.title, url);
         }
 
-        this._onLocationChange();
+        if (this._resolving) {
+            return Promise.resolve();
+        }
+
+        return this._onLocationChange();
     }
 
     /**
@@ -64,10 +70,19 @@ export class Router {
      * @memberof Router
      */
     replaceState(url = '/', state = {}) {
-        if (url !== location.pathname) {
-            history.replaceState(state, document.title, url);
-            this._onLocationChange();
-        }
+        history.replaceState(state, document.title, url);
+
+        return this._onLocationChange();
+    }
+
+    /**
+     * Resolve route
+     * @param {function} handler
+     */
+    resolve(handler = () => Promise.resolve(true)) {
+        this._resolver = handler;
+
+        return this;
     }
 
     /**
@@ -165,6 +180,60 @@ export class Router {
     _onLocationChange(applied) {
         const path = decodeURI(location.pathname);
 
+        if (this.options.debug) {
+            log(`pushChange, ${path}`);
+        }
+
+        if (applied instanceof Event) {
+            applied = false;
+        }
+
+        // Resolve already in progress
+        if (this._resolving) {
+            return this._resolving;
+        }
+
+        return this._resolving = this._resolver(this._prevUrl, path).then((result) => {
+
+            if (result) {
+                this._resolveLocation(path, history.state, applied);
+                this._resolving = false;
+            } else {
+                return this._revertState().then(() => {
+                    this._resolving = false;
+                });
+            }
+
+        });
+    }
+
+    /**
+     * Revert state to previous saved
+     */
+    _revertState() {
+        // remove forward button
+        return this.pushState(this._prevUrl, this._prevState);
+    }
+
+    /**
+     * Resolve location
+     * @param {string} path
+     * @param {null|object} state
+     * @param {boolean} applied
+     */
+    _resolveLocation(path, state, applied) {
+        this._handleRoutes(path, state, applied);
+        this._saveState(path, state);
+        this.alwaysFunc(path);
+    }
+
+    /**
+     * Apply routes handler to current route
+     * @param {string} path
+     * @param {null|object} state
+     * @param {boolean} applied
+     */
+    _handleRoutes(path, state, applied) {
         for (let i = 0; i < this.routes.length; i++) {
             const parser = this._getRouteParser(this.routes[i].route);
             const match = path.match(parser.regexp);
@@ -174,7 +243,7 @@ export class Router {
 
                 this.routes[i].handler.call(null, {
                     path,
-                    state: history.state,
+                    state,
                     params,
                     applied
                 });
@@ -182,8 +251,35 @@ export class Router {
                 break;
             }
         }
-
-        this.alwaysFunc(path);
     }
 
+    /**
+     * Subscribe browser events
+     */
+    _subscribe() {
+        if (!this._subscribed) {
+            window.addEventListener('popstate', this._onLocationChange);
+            this._subscribed = true;
+        }
+    }
+
+    /**
+     * Unsubscripe browser popstate
+     */
+    _unsubscribe() {
+        if (this._subscribed) {
+            window.removeEventListener('popstate', this._onLocationChange);
+            this._subscribed = false;
+        }
+    }
+
+    /**
+     * Save last handled state of route
+     * @param {string} url
+     * @param {object|null} state
+     */
+    _saveState(url, state) {
+        this._prevUrl = url;
+        this._prevState = state;
+    }
 }
