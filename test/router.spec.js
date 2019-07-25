@@ -30,7 +30,6 @@ describe('Router', function () {
   });
 
   this.beforeEach(() => {
-    history.pushState(null, '', '/');
     this.state = {
       items: [
         { id: 1, value: 'foo' },
@@ -42,6 +41,10 @@ describe('Router', function () {
       always: false,
       resolved: true,
     };
+
+    this.afterEach(() => {
+      this.router.pushState('/');
+    })
   });
 
   it('constructor', () => {
@@ -127,13 +130,14 @@ describe('Router', function () {
     this.router.pushState('/active/4').then(() => {
       assert.equal(this.state.active, 1);
       assert.equal(this.state.always, false);
+      assert.equal(location.pathname, '/');
 
       this.state.resolved = true;
       this.router.pushState('/active/4').then(() => {
-      assert.equal(location.pathname, '/active/4');
-      assert.equal(this.state.active, 4);
-      assert.equal(this.state.always, true);
-      done();
+        assert.equal(location.pathname, '/active/4');
+        assert.equal(this.state.active, 4);
+        assert.equal(this.state.always, true);
+        done();
       });
     });
   });
