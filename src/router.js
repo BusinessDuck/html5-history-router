@@ -11,7 +11,7 @@ export class Router {
 
     /**
      * Creates an instance of Router.
-     * @param {*} options
+     * @param {*} [options]
      * @memberof Router
      */
     constructor(options) {
@@ -49,7 +49,7 @@ export class Router {
         }
 
         if (this._resolving) {
-            return Promise.resolve();
+            return Promise.resolve(false);
         }
 
         return this._onLocationChange();
@@ -87,7 +87,7 @@ export class Router {
 
     /**
      * Attach route with handler
-     * @param {string} route
+     * @param {string|RegExp} route
      * @param {function} handler
      * @returns {Router}
      * @memberof Router
@@ -193,24 +193,30 @@ export class Router {
             return this._resolving;
         }
 
-        return this._resolving = this._resolver(this._prevUrl, path).then((result) => {
+        return this._resolving = this._resolver(this._prevUrl, path)
+            .then(result => {
+                if (result) {
+                    this._resolving = false;
+                    return this._resolveLocation(path, history.state, applied);
+                }
 
-            if (result) {
-                this._resolveLocation(path, history.state, applied);
-                this._resolving = false;
-            } else {
                 return this._revertState().then(() => {
                     this._resolving = false;
-                });
-            }
 
-        });
+                    return false;
+                });
+            });
     }
 
     /**
      * Revert state to previous saved
      */
     _revertState() {
+        // First loaded state
+        if (!this._prevUrl) {
+            return Promise.resolve(this.popState());
+        }
+
         // remove forward button
         return this.pushState(this._prevUrl, this._prevState);
     }
@@ -225,6 +231,8 @@ export class Router {
         this._handleRoutes(path, state, applied);
         this._saveState(path, state);
         this.alwaysFunc(path);
+
+        return Promise.resolve(true);
     }
 
     /**

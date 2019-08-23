@@ -141,4 +141,28 @@ describe('Router', function () {
       });
     });
   });
+
+  it('route should revert state when resolver has been rejected', (done) => {
+    assert.equal(this.state.active, 1);
+    assert.equal(this.state.always, false);
+    this.state.resolved = true;
+
+    this.router.pushState('/active/4').then(allow => {
+      assert.equal(this.state.active, 4);
+      assert.equal(this.state.always, true);
+      assert.equal(location.pathname, '/active/4');
+      assert.equal(allow, true);
+      this.state.always = false;
+
+
+      this.state.resolved = false;
+      this.router.pushState('/active/3').then(allow => {
+        assert.equal(allow, false);
+        assert.equal(location.pathname, '/active/4');
+        assert.equal(this.state.active, 4);
+        assert.equal(this.state.always, false);
+        done();
+      });
+    });
+  });
 });
