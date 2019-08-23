@@ -11,6 +11,7 @@ Lightweight and fast router based on HTML5 history.
   - No server-side hacks for remove # (hash) from URL
   - Easy and clean code
 
+## [Changelog](https://github.com/BusinessDuck/html5-history-router/blob/master/changelog.md)
 # Examples
 
 ### Configure route map
@@ -90,7 +91,17 @@ router.pushState('/product/32', { productId: 32, allowPreview: true });
 // history.pushState(state, title, url);
 // router.applyState();
 // then router will try match current location to defined routes
+```
 
+## Promise resolve
+```js
+...
+
+router
+    // Resolve route only when authorized
+    .resolve(() => auth.isAuthorized())
+    .on(/\/product\/[0-9]/, ({ path, state }) => {
+});
 
 ```
 ---
