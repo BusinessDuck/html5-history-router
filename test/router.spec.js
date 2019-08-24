@@ -1,4 +1,4 @@
-import { Router } from '../lib/router.js';
+import { Router } from '../lib/router';
 import assert from 'assert';
 import register from 'jsdom-global';
 
