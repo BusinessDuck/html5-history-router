@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/BusinessDuck/html5-history-router.svg?branch=master)](https://travis-ci.org/BusinessDuck/html5-history-router)
 [![npm version](https://badge.fury.io/js/html5-history-router.svg)](https://badge.fury.io/js/html5-history-router)
+[![Coverage Status](https://coveralls.io/repos/github/BusinessDuck/html5-history-router/badge.svg?branch=master)](https://coveralls.io/github/BusinessDuck/html5-history-router?branch=master)
 
 Lightweight and fast router based on HTML5 history.
 ## Why native history instead of location.hash

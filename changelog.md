@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.1.1]
+### Changed
+- Build with rollup
+- Enforce es3 with buble
+- Builds for web, nodejs (es, cjs)
+- Added test coverage
+
+## 0.1.1
 ### Added
 - Changelog.md
 - Fix missed <Promise> return
