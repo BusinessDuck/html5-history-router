@@ -1,6 +1,7 @@
 # Pure JavaScript HTML5 router
 
 [![Build Status](https://travis-ci.org/BusinessDuck/html5-history-router.svg?branch=master)](https://travis-ci.org/BusinessDuck/html5-history-router)
+[![npm version](https://badge.fury.io/js/html5-history-router.svg)](https://badge.fury.io/js/html5-history-router)
 
 Lightweight and fast router based on HTML5 history.
 ## Why native history instead of location.hash
@@ -10,6 +11,11 @@ Lightweight and fast router based on HTML5 history.
   - The history API is a robust system that is actually designed to do that job (hash it is anchor to id actually)
   - No server-side hacks for remove # (hash) from URL
   - Easy and clean code
+
+## Installation
+```bash
+npm i html5-history-router
+```
 
 ## [Changelog](https://github.com/BusinessDuck/html5-history-router/blob/master/changelog.md)
 # Examples
