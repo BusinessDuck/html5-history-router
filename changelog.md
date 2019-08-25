@@ -1,7 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [1.0.1]
+## [1.0.2]
+### Changed
+- Hotifx deps
+
+## 1.0.1
 ### Changed
 - Build with rollup
 - Enforce es3 with buble
