@@ -31,13 +31,13 @@
   },
   "homepage": "https://github.com/BusinessDuck/html5-history-router",
   "dependencies": {
-    "babel-preset-es2017": "^6.24.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.5.5",
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
     "@babel/register": "^7.5.5",
+    "babel-preset-es2017": "^6.24.1",
     "coveralls": "^3.0.6",
     "jsdom": "^15.1.1",
     "jsdom-global": "^3.0.2",
