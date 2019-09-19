@@ -1,6 +1,6 @@
 {
   "name": "html5-history-router",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Native javascript router based on html5 history API",
   "main": "lib/router.cjs.js",
   "module": "lib/router.esm.js",
