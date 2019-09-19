@@ -17,7 +17,10 @@ export default [
     plugins: [
       resolve(), // so Rollup can find `ms`
       commonjs(), // so Rollup can convert `ms` to an ES module
-      buble(),
+      buble({
+        transforms: { forOf: false },
+        objectAssign: 'Object.assign'
+    }),
       terser(), // uglify
       gzipPlugin()
     ]

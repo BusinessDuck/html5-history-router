@@ -223,7 +223,7 @@ export class Router {
         }
 
         // remove forward button
-        return this.pushState(this._prevUrl, { _reverted: true, ...this._prevState });
+        return this.pushState(this._prevUrl, Object.assign({}, { _reverted: true }, this._prevState));
     }
 
     /**

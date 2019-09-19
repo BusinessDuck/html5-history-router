@@ -32,10 +32,10 @@
   "homepage": "https://github.com/BusinessDuck/html5-history-router",
   "dependencies": {},
   "devDependencies": {
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "@babel/register": "^7.5.5",
+    "@babel/cli": "^7.6.0",
+    "@babel/core": "^7.6.0",
+    "@babel/preset-env": "^7.6.0",
+    "@babel/register": "^7.6.0",
     "babel-preset-es2017": "^6.24.1",
     "coveralls": "^3.0.6",
     "jsdom": "^15.1.1",
@@ -43,12 +43,12 @@
     "mocha": "^6.2.0",
     "mocha-coveralls-reporter": "0.0.5",
     "nyc": "^14.1.1",
-    "rollup": "^1.20.1",
+    "rollup": "^1.21.4",
     "rollup-plugin-buble": "^0.19.8",
-    "rollup-plugin-commonjs": "^10.0.2",
+    "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-gzip": "^2.2.0",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-terser": "^5.1.1",
+    "rollup-plugin-terser": "^5.1.2",
     "rollup-plugin-uglify-es": "0.0.1"
   }
 }
