@@ -32,6 +32,7 @@ export class Router {
      * @memberof Router
      */
     applyState() {
+        this._saveState(document.location.pathname, history.state);
         return this._onLocationChange(true);
     }
 
@@ -42,6 +43,11 @@ export class Router {
      * @memberof Router
      */
     pushState(url = '/', state = {}) {
+
+        if (!state._reverted) {
+            this._saveState(document.location.pathname, history.state);
+        }
+
         if (url !== location.pathname) {
             history.pushState(state, document.title, url);
         } else {
@@ -193,19 +199,18 @@ export class Router {
             return this._resolving;
         }
 
-        return this._resolving = this._resolver(this._prevUrl, path)
-            .then(result => {
-                if (result) {
-                    this._resolving = false;
-                    return this._resolveLocation(path, history.state, applied);
-                }
+        return this._resolving = this._resolver(this._prevUrl, path).then((result) => {
 
+            if (result) {
+                this._resolving = false;
+                return this._resolveLocation(path, history.state, applied);
+            } else {
                 return this._revertState().then(() => {
                     this._resolving = false;
-
-                    return false;
                 });
-            });
+            }
+
+        });
     }
 
     /**
@@ -218,7 +223,7 @@ export class Router {
         }
 
         // remove forward button
-        return this.pushState(this._prevUrl, this._prevState);
+        return this.pushState(this._prevUrl, { _reverted: true, ...this._prevState });
     }
 
     /**
