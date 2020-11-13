@@ -1,49 +1,76 @@
-const log = message => {
+const log = (message: string) => {
     console.log(`%c[Router]%c ${message}`, 'color: rgb(255, 105, 100);', 'color: inherit');
 };
 
+export interface RouterOptions {
+    debug?: boolean;
+}
+
+export interface RouterState {
+    _reverted?: boolean;
+}
+
+export type RouteHandler<T extends RouterState = RouterState> = (
+    path: string,
+    state?: T,
+    params?: Record<string, unknown>,
+    applied?: boolean,
+) => Promise<boolean>;
+
 /**
  * Router
- * @export
- * @class Router
  */
 export class Router {
+    protected routes: Array<{ route: string | RegExp; handler: RouteHandler }> = [];
+    protected options: RouterOptions;
+    private alwaysFunc: RouteHandler;
+    private _resolving: ReturnType<RouteHandler> | null;
+    private _resolver: RouteHandler;
+    private _prevUrl: string;
+    private _prevState: RouterState;
+    private _subscribed: boolean;
+    private _listener: () => void;
 
     /**
      * Creates an instance of Router.
-     * @param {*} [options]
-     * @memberof Router
      */
-    constructor(options) {
+    constructor(options: RouterOptions) {
         this.routes = [];
-        this.options = Object.assign({
-            debug: false
-        }, options);
+        this.options = Object.assign(
+            {
+                debug: false,
+            },
+            options,
+        );
         this.always(() => null);
-        this._onLocationChange = this._onLocationChange.bind(this);
+        this._listener = () => this._onLocationChange(false);
         this._subscribe();
         this.resolve();
-        window.addEventListener('DOMContentLoaded', this._onLocationChange);
+        window.addEventListener('DOMContentLoaded', this._listener);
+    }
+
+    /**
+     * Dispose router
+     */
+    public dispose() {
+        this._prevState = null;
+        this._prevUrl = null;
+        this._unsubscribe();
     }
 
     /**
      * Sync current route with router
-     * ! Use it after external location or history change
-     * @memberof Router
+     * !NB: Use it after external location or history change
      */
-    applyState() {
+    public applyState() {
         this._saveState(document.location.pathname, history.state);
         return this._onLocationChange(true);
     }
 
     /**
      * Push route state to history stack
-     * @param {string} [url='/']
-     * @param {*} [state={}]
-     * @memberof Router
      */
-    pushState(url = '/', state = {}) {
-
+    public pushState<T extends RouterState = RouterState>(url = '/', state = {} as T) {
         if (!state._reverted) {
             this._saveState(document.location.pathname, history.state);
         }
@@ -63,19 +90,15 @@ export class Router {
 
     /**
      * Pop state from history stack
-     * @memberof Router
      */
-    popState() {
+    public popState() {
         history.back();
     }
 
     /**
      * Replace current url to new with state
-     * @param {string} [url='/']
-     * @param {*} [state={}]
-     * @memberof Router
      */
-    replaceState(url = '/', state = {}) {
+    public replaceState<T extends RouterState = RouterState>(url = '/', state = {} as T) {
         history.replaceState(state, document.title, url);
 
         return this._onLocationChange();
@@ -83,9 +106,8 @@ export class Router {
 
     /**
      * Resolve route
-     * @param {function} handler
      */
-    resolve(handler = () => Promise.resolve(true)) {
+    public resolve(handler: RouteHandler = () => Promise.resolve(true)) {
         this._resolver = handler;
 
         return this;
@@ -93,15 +115,11 @@ export class Router {
 
     /**
      * Attach route with handler
-     * @param {string|RegExp} route
-     * @param {function} handler
-     * @returns {Router}
-     * @memberof Router
      */
-    on(route, handler) {
+    public on(route: string | RegExp, handler: RouteHandler) {
         this.routes.push({
             route,
-            handler
+            handler,
         });
 
         return this;
@@ -109,14 +127,11 @@ export class Router {
 
     /**
      *  Default route fallback
-     * @param {function} handler
-     * @returns {Router}
-     * @memberof Router
      */
-    default(handler) {
+    public default(handler: RouteHandler) {
         this.routes.push({
             route: '',
-            handler
+            handler,
         });
 
         return this;
@@ -124,11 +139,8 @@ export class Router {
 
     /**
      * Every route change callback
-     * @param {*} func
-     * @returns {Router}
-     * @memberof Router
      */
-    always(func) {
+    public always(func: RouteHandler) {
         this.alwaysFunc = func;
 
         return this;
@@ -136,40 +148,34 @@ export class Router {
 
     /**
      * Parse route by regexp or route mask
-     * @param {string} route
-     * @returns {*}
-     * @memberof Router
      */
-    _getRouteParser(route) {
-        const paramNames = [];
-        let regexp;
+    private _getRouteParser(route: string | RegExp) {
+        const paramNames: string[] = [];
+        let regexp: RegExp;
 
         if (route instanceof RegExp) {
             regexp = route;
         } else {
-            regexp = route.replace(/([:*])(\w+)/g, (full, dots, name) => {
-                paramNames.push(name);
-                return '([^/]+)';
-            }).replace(/\*/g, '(?:.*)');
+            const expression = route
+                .replace(/([:*])(\w+)/g, (full, dots, name) => {
+                    paramNames.push(name);
+                    return '([^/]+)';
+                })
+                .replace(/\*/g, '(?:.*)');
 
-            regexp = new RegExp(`${regexp}(?:/$|$)`);
+            regexp = new RegExp(`${expression}(?:/$|$)`);
         }
 
         return {
             paramNames,
-            regexp
+            regexp,
         };
     }
 
     /**
      * Collect route params from matches founded in route path
-     * @param {*} match
-     * @param {*} paramNames
-     * @returns {*}
-     * @private
-     * @memberof Router
      */
-    _collectRouteParams(match, paramNames) {
+    private _collectRouteParams(match: string[], paramNames: string[]) {
         return match.slice(1, match.length).reduce((params, value, index) => {
             params[paramNames[index]] = decodeURIComponent(value);
 
@@ -179,19 +185,12 @@ export class Router {
 
     /**
      * Location change callback
-     * @param {Boolean} applied
-     * @private
-     * @memberof Router
      */
-    _onLocationChange(applied) {
+    private _onLocationChange(applied?: boolean) {
         const path = decodeURI(location.pathname);
 
         if (this.options.debug) {
             log(`pushChange, ${path}`);
-        }
-
-        if (applied instanceof Event) {
-            applied = false;
         }
 
         // Resolve already in progress
@@ -199,27 +198,29 @@ export class Router {
             return this._resolving;
         }
 
-        return this._resolving = this._resolver(this._prevUrl, path).then((result) => {
-
+        this._resolving = this._resolver(path).then((result) => {
             if (result) {
-                this._resolving = false;
+                this._resolving = null;
                 return this._resolveLocation(path, history.state, applied);
             } else {
                 return this._revertState().then(() => {
-                    this._resolving = false;
+                    this._resolving = null;
+                    return result;
                 });
             }
-
         });
+
+        return this._resolving;
     }
 
     /**
      * Revert state to previous saved
      */
-    _revertState() {
+    private _revertState() {
         // First loaded state
         if (!this._prevUrl) {
-            return Promise.resolve(this.popState());
+            this.popState();
+            return Promise.resolve(true);
         }
 
         // remove forward button
@@ -228,11 +229,8 @@ export class Router {
 
     /**
      * Resolve location
-     * @param {string} path
-     * @param {null|object} state
-     * @param {boolean} applied
      */
-    _resolveLocation(path, state, applied) {
+    private _resolveLocation(path: string, state: RouterState, applied: boolean) {
         this._handleRoutes(path, state, applied);
         this._saveState(path, state);
         this.alwaysFunc(path);
@@ -242,11 +240,8 @@ export class Router {
 
     /**
      * Apply routes handler to current route
-     * @param {string} path
-     * @param {null|object} state
-     * @param {boolean} applied
      */
-    _handleRoutes(path, state, applied) {
+    private _handleRoutes(path: string, state: RouterState, applied: boolean) {
         for (let i = 0; i < this.routes.length; i++) {
             const parser = this._getRouteParser(this.routes[i].route);
             const match = path.match(parser.regexp);
@@ -258,7 +253,7 @@ export class Router {
                     path,
                     state,
                     params,
-                    applied
+                    applied,
                 });
 
                 break;
@@ -269,9 +264,9 @@ export class Router {
     /**
      * Subscribe browser events
      */
-    _subscribe() {
+    private _subscribe() {
         if (!this._subscribed) {
-            window.addEventListener('popstate', this._onLocationChange);
+            window.addEventListener('popstate', this._listener);
             this._subscribed = true;
         }
     }
@@ -279,19 +274,17 @@ export class Router {
     /**
      * Unsubscribe browser popstate
      */
-    _unsubscribe() {
+    private _unsubscribe() {
         if (this._subscribed) {
-            window.removeEventListener('popstate', this._onLocationChange);
+            window.removeEventListener('popstate', this._listener);
             this._subscribed = false;
         }
     }
 
     /**
      * Save last handled state of route
-     * @param {string} url
-     * @param {object|null} state
      */
-    _saveState(url, state) {
+    private _saveState(url: string, state: RouterState) {
         this._prevUrl = url;
         this._prevState = state;
     }
