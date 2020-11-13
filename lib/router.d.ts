@@ -21,7 +21,7 @@ export class Router {
     private _onLocationChange;
     /**
      * Sync current route with router
-     * ! User it after external location or history change
+     * ! Use it after external location or history change
      * @memberof Router
      */
     applyState(): any;
@@ -114,7 +114,7 @@ export class Router {
     _subscribe(): void;
     _subscribed: boolean;
     /**
-     * Unsubscripe browser popstate
+     * Unsubscribe browser popstate
      */
     _unsubscribe(): void;
     /**
