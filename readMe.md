@@ -24,20 +24,20 @@ npm i html5-history-router
 
 ### Configure route map
 ```js
-    import { Router } from 'html5-native-router';
+    import { Router } from 'html5-history-router';
 
     // Init
     router = new Router();
 
     // Add route change callback to router instance
-    router.on(('/foo') => {
+    router.on('/foo', () => {
         // do something...
     });
 
     // Add callbacks chain to router
-    router.on(('/foo') => {
+    router.on('/foo', () => {
             // first callback
-        }).on(('/foo/bar') => {
+        }).on('/foo/bar', () => {
             // second callback (if first does not match)
         })...
 ```
