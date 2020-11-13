@@ -28,7 +28,7 @@ export class Router {
 
     /**
      * Sync current route with router
-     * ! User it after external location or history change
+     * ! Use it after external location or history change
      * @memberof Router
      */
     applyState() {
@@ -277,7 +277,7 @@ export class Router {
     }
 
     /**
-     * Unsubscripe browser popstate
+     * Unsubscribe browser popstate
      */
     _unsubscribe() {
         if (this._subscribed) {
