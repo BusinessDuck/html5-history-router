@@ -101,7 +101,7 @@ router.pushState('/product/32', { productId: 32, allowPreview: true });
 // then router will try match current location to defined routes
 ```
 
-## Promise resolve
+### Promise resolve
 ```js
 ...
 
@@ -113,7 +113,7 @@ router
 
 ```
 
-## Custom State
+### Custom State
 ```ts
 interface CustomState = { orderId: number, productType: string };
 const router = new Rounter<CustomState>();
