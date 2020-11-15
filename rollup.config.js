@@ -4,14 +4,15 @@ import { terser } from 'rollup-plugin-terser';
 import pkg from './package.json';
 import gzipPlugin from 'rollup-plugin-gzip';
 import typescript from 'rollup-plugin-typescript2';
-const tsConfig = {
+
+const tsConfigCjs = {
     tsconfigOverride: {
-        compilerOptions: { declaration: false },
+        compilerOptions: { module: 'esnext', declaration: false },
     },
     clean: true,
 };
 
-const tsConfig = {
+const tsConfigEsm = {
     tsconfigOverride: {
         compilerOptions: { module: 'esnext' },
     },
@@ -29,7 +30,7 @@ export default [
         plugins: [
             resolve(), // so Rollup can find `ms`
             commonjs(), // so Rollup can convert `ms` to an ES module
-            typescript(tsConfig),
+            typescript(tsConfigCjs),
             terser(), // uglify
             gzipPlugin(),
         ],
@@ -37,7 +38,7 @@ export default [
     {
         input: 'src/router.ts',
         external: [],
-        plugins: [typescript()],
+        plugins: [typescript(tsConfigEsm)],
         output: [{ file: pkg.module, format: 'es' }],
     },
 ];
