@@ -112,6 +112,15 @@ router
 });
 
 ```
+
+## Custom State
+```ts
+interface CustomState = { orderId: number, productType: string };
+const router = new Rounter<CustomState>();
+const state = { orderId: 12, productType: 'candy' };
+router.pushState('/product/23', state);
+```
+
 ---
 License
 ----
