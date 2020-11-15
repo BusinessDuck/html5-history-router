@@ -2,9 +2,10 @@ export interface RouterOptions {
     debug?: boolean;
 }
 export interface RouterState {
-    _reverted?: boolean;
+    reverted?: boolean;
 }
-export declare type RouteHandler<T extends RouterState = RouterState> = (path: string, state?: T, params?: Record<string, unknown>, applied?: boolean) => Promise<boolean>;
+export declare type ResolveHandler = (prev: string, current: string) => Promise<boolean>;
+export declare type RouteHandler<T extends RouterState = RouterState> = (path: string, state?: T, params?: Record<string, unknown>, applied?: boolean) => void;
 /**
  * Router
  */
@@ -24,7 +25,7 @@ export declare class Router {
     /**
      * Creates an instance of Router.
      */
-    constructor(options: RouterOptions);
+    constructor(options?: RouterOptions);
     /**
      * Dispose router
      */
@@ -49,7 +50,7 @@ export declare class Router {
     /**
      * Resolve route
      */
-    resolve(handler?: RouteHandler): this;
+    resolve(handler?: ResolveHandler): this;
     /**
      * Attach route with handler
      */
