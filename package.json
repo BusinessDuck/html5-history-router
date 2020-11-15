@@ -5,6 +5,7 @@
   "main": "lib/router.cjs.js",
   "module": "lib/router.esm.js",
   "browser": "lib/router.umd.js",
+  "types": "lib/router.d.ts",
   "scripts": {
     "test": "nyc --reporter=html --reporter=text mocha -r @babel/register test/*.spec.js",
     "coverage": "nyc report --reporter=text-lcov | coveralls",

@@ -7,15 +7,16 @@ export interface RouterOptions {
 }
 
 export interface RouterState {
-    _reverted?: boolean;
+    reverted?: boolean;
 }
 
+export type ResolveHandler = (prev: string, current: string) => Promise<boolean>;
 export type RouteHandler<T extends RouterState = RouterState> = (
     path: string,
     state?: T,
     params?: Record<string, unknown>,
     applied?: boolean,
-) => Promise<boolean>;
+) => void;
 
 /**
  * Router
@@ -24,8 +25,8 @@ export class Router {
     protected routes: Array<{ route: string | RegExp; handler: RouteHandler }> = [];
     protected options: RouterOptions;
     private alwaysFunc: RouteHandler;
-    private _resolving: ReturnType<RouteHandler> | null;
-    private _resolver: RouteHandler;
+    private _resolving: ReturnType<ResolveHandler> | null;
+    private _resolver: ResolveHandler;
     private _prevUrl: string;
     private _prevState: RouterState;
     private _subscribed: boolean;
@@ -34,7 +35,7 @@ export class Router {
     /**
      * Creates an instance of Router.
      */
-    constructor(options: RouterOptions) {
+    constructor(options?: RouterOptions) {
         this.routes = [];
         this.options = Object.assign(
             {
@@ -70,8 +71,8 @@ export class Router {
     /**
      * Push route state to history stack
      */
-    public pushState<T extends RouterState = RouterState>(url = '/', state = {} as T) {
-        if (!state._reverted) {
+    public pushState<T extends RouterState = RouterState>(url = '/', state: T = {} as T) {
+        if (!state.reverted) {
             this._saveState(document.location.pathname, history.state);
         }
 
@@ -107,7 +108,7 @@ export class Router {
     /**
      * Resolve route
      */
-    public resolve(handler: RouteHandler = () => Promise.resolve(true)) {
+    public resolve(handler: ResolveHandler = () => Promise.resolve(true)) {
         this._resolver = handler;
 
         return this;
@@ -198,7 +199,7 @@ export class Router {
             return this._resolving;
         }
 
-        this._resolving = this._resolver(path).then((result) => {
+        this._resolving = this._resolver(this._prevUrl, path).then((result) => {
             if (result) {
                 this._resolving = null;
                 return this._resolveLocation(path, history.state, applied);
@@ -224,7 +225,7 @@ export class Router {
         }
 
         // remove forward button
-        return this.pushState(this._prevUrl, Object.assign({}, { _reverted: true }, this._prevState));
+        return this.pushState<RouterState>(this._prevUrl, { ...this._prevState, reverted: true });
     }
 
     /**
