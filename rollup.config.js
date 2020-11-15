@@ -11,6 +11,13 @@ const tsConfig = {
     clean: true,
 };
 
+const tsConfig = {
+    tsconfigOverride: {
+        compilerOptions: { module: 'esnext' },
+    },
+    clean: true,
+};
+
 export default [
     // browser-friendly UMD build
     {
